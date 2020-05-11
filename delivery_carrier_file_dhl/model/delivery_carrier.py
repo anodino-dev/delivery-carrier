@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
 #
-#    Author: Guewen Baconnier
-#    Copyright 2012 Camptocamp SA
+#    OpenERP, Open Source Management Solution
+#    Copyright (C) 2015 FactorLibre (http://www.factorlibre.com)
+#                  Hugo Santos <hugo.santos@factorlibre.com>
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU Affero General Public License as
@@ -18,8 +19,15 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
+from odoo import models, api
 
-from . import generator
-from . import models
-from . import csv_writer
-from . import wizard
+
+class DeliveryCarrier(models.Model):
+    _inherit = 'delivery.carrier'
+
+    @api.model
+    def _get_carrier_type_selection(self):
+        """ Add DHL carrier type """
+        res = super(DeliveryCarrier, self)._get_carrier_type_selection()
+        res.append(('dhl_carrier_file', 'DHL Carrier file (EPL Label)'))
+        return res

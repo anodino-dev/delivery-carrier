@@ -19,22 +19,20 @@
 #
 ##############################################################################
 
-from openerp.osv import orm, fields
+from odoo import models, fields, api
 
 
-class stock_picking(orm.Model):
+class stock_picking(models.Model):
     _inherit = 'stock.picking'
 
-    _columns = {
-        'carrier_file_generated': fields.boolean('Carrier File Generated',
-                                                 readonly=True,
-                                                 help="The file for the "
-                                                      "delivery carrier "
-                                                      "has been generated."),
-    }
+    carrier_file_generated = fields.Boolean('Carrier File Generated',
+                                             readonly=True,
+                                             help="The file for the "
+                                                  "delivery carrier "
+                                                  "has been generated.")
 
-    def generate_carrier_files(self, cr, uid, ids, auto=True,
-                               recreate=False, context=None):
+    @api.multi
+    def generate_carrier_files(self, auto=True, recreate=False):
         """
         Generates all the files for a list of pickings according to
         their configuration carrier file.
@@ -50,9 +48,9 @@ class stock_picking(orm.Model):
                      are exported
         :return: True if successful
         """
-        carrier_file_obj = self.pool.get('delivery.carrier.file')
+        carrier_file_obj = self.env['delivery.carrier.file']
         carrier_file_ids = {}
-        for picking in self.browse(cr, uid, ids, context):
+        for picking in self:
             if picking.type != 'out':
                 continue
             if not recreate and picking.carrier_file_generated:
@@ -69,31 +67,13 @@ class stock_picking(orm.Model):
         for carrier_file_id, carrier_picking_ids\
                 in carrier_file_ids.iteritems():
             carrier_file_obj.generate_files(cr, uid, carrier_file_id,
-                                            carrier_picking_ids,
-                                            context=context)
+                                            carrier_picking_ids
+                                            )
         return True
 
-    def action_done(self, cr, uid, ids, context=None):
-        result = super(stock_picking, self).action_done(cr, uid, ids,
-                                                        context=context)
-        self.generate_carrier_files(cr, uid, ids, auto=True, context=context)
+    @api.multi
+    def action_done(self):
+        result = super(stock_picking, self).action_done()
+        self.generate_carrier_files(auto=True)
         return result
 
-
-class stock_picking_out(orm.Model):
-    _inherit = 'stock.picking.out'
-
-    _columns = {
-        'carrier_file_generated': fields.boolean('Carrier File Generated',
-                                                 readonly=True,
-                                                 help="The file for "
-                                                 "the delivery carrier "
-                                                 "has been generated."),
-    }
-
-    def copy(self, cr, uid, rec_id, default=None, context=None):
-        if default is None:
-            default = {}
-        default.update({'carrier_file_generated': False})
-        return super(stock_picking_out, self).copy(cr, uid, rec_id, default,
-                                                   context=context)

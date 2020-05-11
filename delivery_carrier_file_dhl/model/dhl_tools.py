@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
 #
-#    Author: Guewen Baconnier
-#    Copyright 2012 Camptocamp SA
+#    OpenERP, Open Source Management Solution
+#    Copyright (C) 2015 FactorLibre (http://www.factorlibre.com)
+#                  Hugo Santos <hugo.santos@factorlibre.com>
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU Affero General Public License as
@@ -19,7 +20,13 @@
 #
 ##############################################################################
 
-from . import generator
-from . import models
-from . import csv_writer
-from . import wizard
+
+def dhl_format_zip(country_code, zipcode):
+    zipcode = zipcode.replace(' ', '').replace('-', '')
+    if country_code == 'PT':
+        zipcode = zipcode[0:4]
+    if country_code == 'AD':
+        zipcode = "25999"
+    if country_code == "GI":
+        zipcode = "11999"
+    return zipcode

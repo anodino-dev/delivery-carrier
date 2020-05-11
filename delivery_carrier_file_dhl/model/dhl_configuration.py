@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
 #
-#    Author: Guewen Baconnier
-#    Copyright 2012 Camptocamp SA
+#    OpenERP, Open Source Management Solution
+#    Copyright (C) 2015 FactorLibre (http://www.factorlibre.com)
+#                  Hugo Santos <hugo.santos@factorlibre.com>
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU Affero General Public License as
@@ -18,8 +19,21 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
+from odoo import models, fields
 
-from . import generator
-from . import models
-from . import csv_writer
-from . import wizard
+
+class DHLCountryService(models.Model):
+    _name = 'dhl.country.service'
+
+    country_id = fields.Many2one('res.country', 'Country', required=True)
+    service_name = fields.Char('Service Name', required=True)
+    service_code = fields.Char('Service Code')
+    service_number = fields.Char('Service Code No.', required=True)
+
+
+class DHLZipcodeFacility(models.Model):
+    _name = 'dhl.zipcode.facility'
+
+    zipcode = fields.Char('Zipcode', required=True, select=True)
+    facility_name = fields.Char('Facility Name', required=True)
+    facility_code = fields.Char('Facility Code', required=True)

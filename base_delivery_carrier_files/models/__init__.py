@@ -19,7 +19,5 @@
 #
 ##############################################################################
 
-from . import generator
-from . import models
-from . import csv_writer
-from . import wizard
+from . import carrier_file
+from . import stock

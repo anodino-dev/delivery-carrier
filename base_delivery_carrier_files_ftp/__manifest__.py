@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
 #
-#    Author: Guewen Baconnier
-#    Copyright 2012 Camptocamp SA
+#    OpenERP, Open Source Management Solution
+#    Copyright (C) 2015 FactorLibre (http://www.factorlibre.com)
+#                  Hugo Santos <hugo.santos@factorlibre.com>
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU Affero General Public License as
@@ -18,8 +19,22 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-
-from . import generator
-from . import models
-from . import csv_writer
-from . import wizard
+{
+    'name': 'Base module for picking carrier files upload to FTP',
+    'version': '1.0',
+    'author': "3vax, FactorLibre, Odoo Community Association (OCA)",
+    'category': 'Generic Modules/Warehouse',
+    'depends': [
+        'base_delivery_carrier_files'
+    ],
+    'website': 'http://3vax.com',
+    'data': [
+        'view/carrier_file_view.xml'
+    ],
+    'installable': True,
+    'auto_install': False,
+    'license': 'AGPL-3',
+    'external_dependencies': {
+        'python': ['ftplib'],
+    }
+}
