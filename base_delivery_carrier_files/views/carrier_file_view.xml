@@ -18,7 +18,7 @@
             <field name="model">delivery.carrier.file</field>
             <field name="arch" type="xml">
                 <form string="Carrier File">
-                    <group colspan="4" col="4" name="general">
+                    <group name="general">
                         <field name="name" select="1"/>
                         <field name="type" select="1"/>
                         <field name="auto_export"/>

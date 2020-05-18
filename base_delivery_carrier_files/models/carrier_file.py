@@ -60,7 +60,7 @@ class CarrierFile(models.Model):
                                        'delivery order will be exported '
                                        'in a separate file.')
 
-    def _write_file(self, carrier_file, filename, file_content):
+    def _write_file(self, filename, file_content):
         """
         Method responsible of writing the file, on the filesystem or
         by inheriting the module, in the document module as instance
@@ -71,17 +71,17 @@ class CarrierFile(models.Model):
         :param tuple file_content: content of the file to write
         :return: True if write is successful
         """
-        if not carrier_file.export_path:
+        if not self.export_path:
             raise exceptions.except_orm(_('Error'),
                                  _('Export path is not defined '
                                    'for carrier file %s') %
-                                 (carrier_file.name,))
-        full_path = os.path.join(carrier_file.export_path, filename)
+                                 (self.name,))
+        full_path = os.path.join(self.export_path, filename)
         with open(full_path, 'w') as file_handle:
             file_handle.write(file_content)
         return True
 
-    def _generate_files(self, carrier_file, picking_ids ):
+    def _generate_files(self, picking_ids ):
         """
         Generate one or more files according to carrier_file configuration
         for all picking_ids
@@ -95,12 +95,12 @@ class CarrierFile(models.Model):
         context = self.env.context or {}
         picking_obj = self.env['stock.picking']
         log = logging.getLogger('delivery.carrier.file')
-        file_generator = new_file_generator(carrier_file.type)
+        file_generator = new_file_generator(self.type)
         pickings = [picking for picking in
                     picking_obj.browse(picking_ids)]
         # must return a list of generated pickings ids to update
-        files = file_generator.generate_files(pickings, carrier_file)
-        if carrier_file.auto_export:
+        files = file_generator.generate_files(pickings, self)
+        if self.auto_export:
             context['picking_id'] = pickings and pickings[0].id
         for f in files:
             filename, file_content, picking_ids = f
@@ -111,7 +111,7 @@ class CarrierFile(models.Model):
             # but I encountered lock because the picking
             # was already modified in the current transaction
             try:
-                if self._write_file(carrier_file, filename,
+                if self._write_file(filename,
                                     file_content):
                     pickings.write({'carrier_file_generated': True})
             except Exception as e:
@@ -120,7 +120,7 @@ class CarrierFile(models.Model):
                               picking_ids, e)
         return True
 
-    def generate_files(self, carrier_file_id, picking_ids):
+    def generate_files(self, picking_ids):
         """
         Generate one or more files according to carrier_file
         configuration for all picking_ids
@@ -132,14 +132,8 @@ class CarrierFile(models.Model):
                                  which we have to generate a file
         :return: True if successful
         """
-        if not isinstance(carrier_file_id, (int, long)):
-            if len(carrier_file_id) > 1:
-                raise Exception('Code Error: you have to export '
-                                'only one carrier at a time.')
-            else:
-                carrier_file_id = carrier_file_id[0]
-        carrier_file = self.browse(carrier_file_id)
-        return self._generate_files(carrier_file, picking_ids)
+        self.ensure_one()
+        return self._generate_files(picking_ids)
 
 
 class delivery_carrier(models.Model):

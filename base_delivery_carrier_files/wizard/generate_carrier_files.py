@@ -54,10 +54,7 @@ class DeliveryCarrierFileGenerate(models.TransientModel):
             if not form.picking_ids:
                 raise exceptions.except_orm(_('Error'), _('No delivery orders selected'))
     
-            picking_obj = self.env['stock.picking']
-            picking_ids = [picking.id for picking in form.picking_ids]
-            picking_obj.generate_carrier_files(picking_ids,
-                                               auto=False,
+            form.picking_ids.generate_carrier_files(auto=False,
                                                recreate=form.recreate
                                                )
 

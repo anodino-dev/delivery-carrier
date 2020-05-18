@@ -51,7 +51,7 @@ class stock_picking(models.Model):
         carrier_file_obj = self.env['delivery.carrier.file']
         carrier_file_ids = {}
         for picking in self:
-            if picking.type != 'out':
+            if picking.picking_type_code != 'outgoing':
                 continue
             if not recreate and picking.carrier_file_generated:
                 continue
@@ -66,9 +66,7 @@ class stock_picking(models.Model):
 
         for carrier_file_id, carrier_picking_ids\
                 in carrier_file_ids.iteritems():
-            carrier_file_obj.generate_files(cr, uid, carrier_file_id,
-                                            carrier_picking_ids
-                                            )
+            carrier_file_obj.browse(carrier_file_id).generate_files(carrier_picking_ids)
         return True
 
     @api.multi
