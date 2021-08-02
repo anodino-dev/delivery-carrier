@@ -143,7 +143,7 @@ class StockPicking(models.Model):
             Name=(partner.parent_id or partner).name,
             AttentionName=partner.name,
             TaxIdentificationNumber=partner.vat,
-            Phone=dict(Number=partner.phone or partner.mobile,),
+            Phone=dict(Number=partner.phone or partner.mobile or '1'*9,),
             EMailAddress=partner.email,
             Address=dict(
                 AddressLine=[partner.street, partner.street2],
