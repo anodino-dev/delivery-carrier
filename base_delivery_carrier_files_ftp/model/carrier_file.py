@@ -59,7 +59,7 @@ class CarrierFile(models.Model):
                         format(e))
             ftp_command = "STOR {}".format(filename)
             with tempfile.NamedTemporaryFile() as temp:
-                temp.write(file_content)
+                temp.write(file_content.encode())
                 temp.flush()
                 with open(temp.name) as file_handle:
                     try:
