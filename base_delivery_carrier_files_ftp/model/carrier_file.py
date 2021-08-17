@@ -61,7 +61,7 @@ class CarrierFile(models.Model):
             with tempfile.NamedTemporaryFile() as temp:
                 temp.write(file_content.encode())
                 temp.flush()
-                with open(temp.name) as file_handle:
+                with open(temp.name,'rb') as file_handle:
                     try:
                         ftp.storbinary(ftp_command, file_handle)
                         return True
