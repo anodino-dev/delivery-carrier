@@ -59,6 +59,20 @@ msgid "Based on Rules"
 msgstr ""
 
 #. module: delivery_carrier_label_ups
+#: model:ir.model.fields,help:delivery_carrier_label_ups.field_carrier_account__ups_negotiated_rates
+msgid "By default, shipping to UPS makes use of Published Rates. To\n"
+"        use Negotiated Rates instead, just set this flag to True.\n"
+"        A negotiated rate can be enabled only in case it's established by contract\n"
+"        between your company and UPS.\n"
+"    "
+msgstr ""
+
+#. module: delivery_carrier_label_ups
+#: selection:delivery.carrier,delivery_type:0
+msgid "CTT Express"
+msgstr ""
+
+#. module: delivery_carrier_label_ups
 #: selection:product.packaging,ups_code:0
 msgid "Customer Supplied Package"
 msgstr ""
@@ -159,7 +173,7 @@ msgid "Next Day Air Saver"
 msgstr ""
 
 #. module: delivery_carrier_label_ups
-#: code:addons/delivery_carrier_label_ups/models/stock_picking.py:224
+#: code:addons/delivery_carrier_label_ups/models/stock_picking.py:401
 #, python-format
 msgid "No UPS account found for this company"
 msgstr ""
@@ -190,7 +204,7 @@ msgid "Parcels"
 msgstr ""
 
 #. module: delivery_carrier_label_ups
-#: code:addons/delivery_carrier_label_ups/models/stock_picking.py:46
+#: code:addons/delivery_carrier_label_ups/models/stock_picking.py:175
 #, python-format
 msgid "Picking %s must set exactly one shipping option"
 msgstr ""
@@ -226,7 +240,7 @@ msgid "Provider"
 msgstr ""
 
 #. module: delivery_carrier_label_ups
-#: code:addons/delivery_carrier_label_ups/models/stock_picking.py:205
+#: code:addons/delivery_carrier_label_ups/models/stock_picking.py:382
 #, python-format
 msgid "Sending %s to UPS: %s"
 msgstr ""
@@ -355,5 +369,10 @@ msgstr ""
 #. module: delivery_carrier_label_ups
 #: model:ir.model.fields,field_description:delivery_carrier_label_ups.field_product_packaging__ups_code
 msgid "Ups Code"
+msgstr ""
+
+#. module: delivery_carrier_label_ups
+#: model:ir.model.fields,field_description:delivery_carrier_label_ups.field_carrier_account__ups_negotiated_rates
+msgid "Ups Negotiated Rates"
 msgstr ""
 

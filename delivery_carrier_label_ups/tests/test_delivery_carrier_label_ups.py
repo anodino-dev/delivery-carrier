@@ -19,9 +19,13 @@ class DeliveryCarrierLabelUpsCase(carrier_label_case.CarrierLabelCase):
                 "password": "password",
                 "ups_access_license": "access license",
                 "ups_shipper_number": "shipper number",
+                "ups_negotiated_rates": True,
             }
         )
         with self._setup_mock_requests() as mock_requests:
+            ctx = dict(self.env.context)
+            ctx["get_parcel_labels"] = True
+            self.env = self.env(context=ctx)
             super()._create_order_picking()
             self.assertTrue(
                 mock_requests.post.call_args[1]["json"]["ShipmentRequest"]["Shipment"][
@@ -39,10 +43,78 @@ class DeliveryCarrierLabelUpsCase(carrier_label_case.CarrierLabelCase):
                 ShipmentResponse=dict(
                     ShipmentResults=dict(
                         ShipmentCharges=dict(
-                            TotalCharges=dict(MonetaryValue=42, CurrencyCode="USD",),
+                            TotalCharges=dict(
+                                MonetaryValue="42.00", CurrencyCode="USD",),
+                        ),
+                        NegotiatedRateCharges=dict(
+                            TotalCharge=dict(
+                                MonetaryValue="39.89", CurrencyCode="USD",),
                         ),
                         ShipmentIdentificationNumber="shipping_tracking",
-                        PackageResults=dict(TrackingNumber="package_tracking",),
+                        PackageResults=[
+                            {"TrackingNumber": "1ZWA82900192955557",
+                             "BaseServiceCharge": {
+                                 "CurrencyCode": "USD",
+                                 "MonetaryValue": "126.27"
+                             },
+                             "ServiceOptionsCharges": {
+                                 "CurrencyCode": "USD",
+                                 "MonetaryValue": "0.00"
+                             },
+                             "ShippingLabel": {
+                                 "ImageFormat": {
+                                     "Code": "GIF",
+                                     "Description": "GIF"
+                                 },
+                                 "GraphicImage": base64.b64encode(
+                                     bytes("hello", "utf8")),
+                             },
+                             "ItemizedCharges": [
+                                 {
+                                     "Code": "376",
+                                     "CurrencyCode": "USD",
+                                     "MonetaryValue": "0.00",
+                                     "SubType": "Urban"
+                                 },
+                                 {
+                                     "Code": "375",
+                                     "CurrencyCode": "USD",
+                                     "MonetaryValue": "10.73"
+                                 }
+                             ]
+                             },
+                            {"TrackingNumber": "1ZWA82900194633561",
+                             "BaseServiceCharge": {
+                                 "CurrencyCode": "USD",
+                                 "MonetaryValue": "184.76"
+                             },
+                             "ServiceOptionsCharges": {
+                                 "CurrencyCode": "USD",
+                                 "MonetaryValue": "0.00"
+                             },
+                             "ShippingLabel": {
+                                 "ImageFormat": {
+                                     "Code": "GIF",
+                                     "Description": "GIF"
+                                 },
+                                 "GraphicImage": base64.b64encode(
+                                     bytes("hello", "utf8")),
+                             },
+                             "ItemizedCharges": [
+                                 {
+                                     "Code": "376",
+                                     "CurrencyCode": "USD",
+                                     "MonetaryValue": "0.00",
+                                     "SubType": "Urban"
+                                 },
+                                 {
+                                     "Code": "375",
+                                     "CurrencyCode": "USD",
+                                     "MonetaryValue": "15.70"
+                                 }
+                             ]
+                             }
+                        ],
                     ),
                 ),
             )
@@ -68,6 +140,14 @@ class DeliveryCarrierLabelUpsCase(carrier_label_case.CarrierLabelCase):
 
     def _get_carrier(self):
         return self.env.ref("delivery_carrier_label_ups.carrier_ups")
+
+    def test_picking_total_price(self):
+        """ Check total contracted price. Negotiated rates
+        have the priority over the published rates.
+         """
+        self._create_order_picking()
+        self.assertTrue(self.picking)
+        self.assertEqual(self.picking.carrier_price, 39.89)
 
 
 class TestDeliveryCarrierLabelUps(
@@ -103,3 +183,43 @@ class TestDeliveryCarrierLabelUps(
                 ),
             )
             return super().test_labels()
+
+    def test_return(self):
+        shipping_data = self.picking._ups_shipping_data()['ShipmentRequest']
+        action = self.env['stock.return.picking'].with_context(
+            active_id=self.picking.id
+        ).create({}).create_returns()
+        return_picking = self.env[action['res_model']].browse(action['res_id'])
+        self.assertTrue(return_picking.location_id.usage == 'customer')
+        return_data = return_picking._ups_shipping_data()['ShipmentRequest']
+        self.assertEqual(
+            shipping_data['Shipment']['ShipFrom']['Name'],
+            return_data['Shipment']['ShipTo']['Name'],
+        )
+        self.assertEqual(
+            shipping_data['Shipment']['ShipTo']['Name'],
+            return_data['Shipment']['ShipFrom']['Name'],
+        )
+        self.assertEqual(
+            return_data['Shipment']['ReturnService']['Code'],
+            '8',
+        )
+        options = return_data['Shipment']['ShipmentServiceOptions']
+        self.assertNotEqual(self.picking.partner_id.country_id.code, 'US')
+        self.assertEqual(
+            options['LabelDelivery']['EMailMessage']['SubjectCode'],
+            '01',
+        )
+        self.assertEqual(
+            len(options['Notification']),
+            4,
+        )
+        for notification in options['Notification']:
+            self.assertIn(notification['NotificationCode'], ('2', '5', '7', '8'))
+        ref = 'a reference'
+        self.picking.carrier_tracking_ref = ref
+        self.assertEqual(
+            self.picking._ups_send()[0]['tracking_number'], ref,
+        )
+        return_picking.carrier_id = self._get_carrier()
+        self.assertTrue(return_picking.show_label_button)
