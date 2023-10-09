@@ -370,8 +370,11 @@ class StockPicking(models.Model):
     def _ups_label_specification(self, account):
         """Return a dict containing the UPS Label Specification"""
         return dict(
-            LabelImageFormat=dict(Code="GIF", ),
-            LabelPrintMethod=dict(Code=account.file_format or "PDF", ),
+            LabelImageFormat=dict(Code=account.file_format or "PDF", ),
+            LabelStockSize=dict(
+                Height=str(6),
+                Width=str(4),
+            ),
         )
 
     def _ups_raise_error(self, api_result):
